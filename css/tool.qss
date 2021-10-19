@@ -1,0 +1,20 @@
+QToolButton#headers_bar
+{
+
+    background-color: white;
+	border-radius: 7px;
+	border-style: outset;
+ }
+
+QToolButton:hover#headers_bar
+{
+    box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+
+}
+
+QTextEdit#headers_body
+{
+    background-color: #5c5959;
+	border-radius: 7px;
+	border-style: outset
+}

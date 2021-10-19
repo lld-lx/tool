@@ -1,0 +1,71 @@
+/*按钮普通态*/
+QPushButton#top_button_exit
+{
+    background-color: rgb(240, 12, 1);
+	border-radius: 7px;
+	border-style: outset;
+ }
+
+/*按钮停留态*/
+QPushButton:hover#top_button_exit
+{
+    /*背景颜色*/  
+    background-color: rgb(255, 14, 2);
+}
+ 
+/*按钮按下态*/
+QPushButton:pressed#top_button_exit
+{
+    /*背景颜色*/  
+    background-color: rgb(187, 15, 6);
+}
+
+QPushButton#top_button_mini
+{
+    background-color: rgb(14, 239, 44);
+	border-radius: 7px;
+	border-style: outset;
+ }
+
+QPushButton#top_button_full
+{
+    background-color: rgb(238, 199, 5);
+	border-radius: 7px;
+	border-style: outset;
+ }
+
+/*上半部分样式*/
+QWidget#top_widget
+{
+	color: #232c51;
+	background: #ffffff;
+	border-top:1px solid darkGray;
+	border-bottom:1px solid darkGray;
+	border-right:1px solid darkGray;
+	border-radius: 10px;
+}
+
+QWidget#under_widget
+{
+	background: #ffffff;
+    border-top:1px solid white;
+    border-bottom:1px solid white;
+    border-left:1px solid white;
+	border-radius: 10px;
+ }
+/*QWidget#top_left_widget*/
+/*{*/
+/*	background:gray;*/
+/*    border-top:1px solid white;*/
+/*    border-bottom:1px solid white;*/
+/*    border-left:1px solid white;*/
+/*	border-radius: 10px;*/
+/* }*/
+/*QWidget#top_right_widget*/
+/*{*/
+/*	background:gray;*/
+/*    border-top:1px solid white;*/
+/*    border-bottom:1px solid white;*/
+/*    border-left:1px solid white;*/
+/*	border-radius: 10px;*/
+/* }*/
