@@ -7,10 +7,6 @@ from css.reader import CommonHelper
 from mitm_tool.proxy_set import proxy_start
 from mitm_tool.create_addon import HTTP
 from mitm_tool.mitm_start import mitmproxy_config, mitmproxy_start, mitmproxy_shutdown
-from re import sub
-from mitm_tool.addons import need_start
-import shlex
-import subprocess
 
 
 class MiTm(ToolMember):
@@ -37,19 +33,13 @@ class MiTm(ToolMember):
         port = ...
         proxy_start(ip, port)  # 启动代理
         # 从面板输入中读取相关配置信息,每页为一组
-        page = ...
-        addons = ...
+        pages = ...
+        addons = []
+        for one_page in pages:
+            addons.append(HTTP(one_page))
 
         self.config = mitmproxy_config(ip, port, addons)
         mitmproxy_start(self.config)
-
-        get_url = ...
-        set_url = ...
-        set_requests_headers = ...
-
-        set_requests_data = ...
-        set_response_headers = ...
-        set_response_data = ...
 
     def end_mitmproxy(self):
         mitmproxy_shutdown(self.config)

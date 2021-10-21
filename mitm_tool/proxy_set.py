@@ -34,3 +34,8 @@ def proxy_shutdown():
     set_key('ProxyEnable', 0)  # 停用
     internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)
     internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
+
+
+if __name__ == "__main__":
+    # proxy_start('127.0.0.1', 8088)
+    proxy_shutdown()

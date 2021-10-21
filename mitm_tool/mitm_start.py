@@ -2,10 +2,10 @@ from mitmproxy.options import Options
 from mitmproxy.proxy import ProxyConfig
 from mitmproxy.proxy.server import ProxyServer
 from mitmproxy.tools.dump import DumpMaster
-from os import popen
+from mitmproxy.script import concurrent
 import threading
 import asyncio
-import time
+from json import loads, dumps
 
 
 class Addon(object):
@@ -13,12 +13,18 @@ class Addon(object):
         self.num = 1
 
     def request(self, flow):
-        flow.request.headers["count"] = str(self.num)
+        if flow.request.text:
+            try:
+                dict_msg = loads(flow.request.text)
+                if dict_msg.__contains__("num"):
+                    dict_msg["num"] = 2
+                    flow.request.text = dumps(dict_msg)
+            except:
+                pass
 
+    @concurrent
     def response(self, flow):
         self.num = self.num + 1
-        flow.response.headers["count"] = str(self.num)
-        print(self.num)
 
 
 # see source mitmproxy/master.py for details
@@ -50,3 +56,8 @@ def mitmproxy_start(mt):
 
 def mitmproxy_shutdown(mt):
     mt.shutdown()
+
+
+if __name__ == "__main__":
+    mitmproxy_s = mitmproxy_config('127.0.0.1', 8088, [Addon()])
+    mitmproxy_start(mitmproxy_s)
