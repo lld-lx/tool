@@ -9,8 +9,7 @@ class BrowserHeaders(ToolMember):
         super(BrowserHeaders, self).__init__(father, mother)
         self.textEdit = None
         self.start_button = None
-        self.button = self.tool_bar()
-        self.add_widget()
+        self.tool_bar()
 
     # 读取输入内容，转换为字典后加入文本控件中
     def format_conversion(self):
@@ -56,11 +55,10 @@ class BrowserHeaders(ToolMember):
 
     # 调用父类方法创建一个QToolButton
     def tool_bar(self):
-        tool_button = self.any_bar(
+        self.any_bar(
             '浏览器表头转换', './picture/headers.png',
             "headers_bar", lambda: self.tool_bar_click()
         )
-        return tool_button
 
     @staticmethod
     def tool_body():
@@ -72,9 +70,6 @@ class BrowserHeaders(ToolMember):
         start_button = QPushButton()
         start_button.clicked.connect(lambda: self.format_conversion())
         return start_button
-
-    def add_widget(self):
-        self.father.addWidget(self.button)
 
     def tool_bar_click(self):
         self.remove()

@@ -1,8 +1,9 @@
-"""通过argv读取来自cmd的参数，暂时不做反向代理部分，因为基本用不到，需要反代可以直接用nginx"""
+"""通过传入的参数,构建mitmproxy启动需要的addon类"""
 import mitmproxy.http
 from mitmproxy import ctx, http
 from re import compile, sub
 from json import dumps, loads
+from mitmproxy.script import concurrent
 
 
 class HTTP(object):
@@ -24,6 +25,7 @@ class HTTP(object):
         return compile(parm, flow_parm)
 
     # 请求时就设置,非2xx直接不发送请求,断开连接
+    @concurrent
     def http_connect(self, flow: mitmproxy.http.HTTPFlow):
         if self.code:
             if self.url_flag:
@@ -39,6 +41,7 @@ class HTTP(object):
 
     # 对表头进行替换  (need_match, replace_msg, 0)
     # 为0则使用字典, 为1则完全替换, 为2则使用正则, 为-1则不需要替换
+    @concurrent
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
         for one_rule in self.requests_headers:
             flow.request.headers = self.header_func(
@@ -59,6 +62,7 @@ class HTTP(object):
                 one_rule[2]
             )
 
+    @concurrent
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
         for one_rule in self.response_headers:
             flow.response.headers = self.header_func(
@@ -69,6 +73,7 @@ class HTTP(object):
                 one_rule[2]
             )
 
+    @concurrent
     def response(self, flow: mitmproxy.http.HTTPFlow):
         for one_rule in self.response_data:
             flow.response.text = self.data_func(

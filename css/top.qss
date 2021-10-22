@@ -69,3 +69,15 @@ QWidget#under_widget
 /*    border-left:1px solid white;*/
 /*	border-radius: 10px;*/
 /* }*/
+
+QPushButton::branch:has-children:!has-siblings:closed,
+QPushButton::branch:closed:has-children:has-siblings {
+border-image: none;
+image: url(branch-closed.png);
+}
+
+QPushButton::branch:open:has-children:!has-siblings,
+QPushButton::branch:open:has-children:has-siblings {
+border-image: none;
+image: url(branch-open.png);
+}

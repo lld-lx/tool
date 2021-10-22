@@ -12,6 +12,7 @@ class Addon(object):
     def __init__(self):
         self.num = 1
 
+    @concurrent
     def request(self, flow):
         if flow.request.text:
             try:

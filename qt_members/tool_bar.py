@@ -21,15 +21,15 @@ class ToolMember(QWidget):
         tool_button.setObjectName(object_name)
         tool_button.setStyleSheet(self.qss)
         tool_button.clicked.connect(func)
-        return tool_button
+        self.father.addWidget(tool_button)
 
     def remove(self):
         item_list = list(range(self.mother.count()))
         item_list.reverse()  # 倒序删除，避免影响布局顺序
+        print(item_list)
 
         for i in item_list:
             item = self.mother.itemAt(i)
             self.mother.removeItem(item)
             if item.widget():
                 item.widget().deleteLater()
-

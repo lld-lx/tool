@@ -1,5 +1,6 @@
 from sys import argv, exit
 from my_tool.browser_headers_change_to_dict import BrowserHeaders
+from my_tool.mitm import MiTm
 from win_fonts.round_font import RoundShadow, FramelessWindow
 from win_fonts.move_font import MOVE
 from qt_members.close_mini_max import CMM
@@ -66,7 +67,7 @@ class Tool(RoundShadow, MOVE, FramelessWindow):
         for i, j in enumerate(CMM(self).circle_button()):
             self.top_right_layout.addWidget(j, 1, Qt.AlignTop)  # 关闭放大三个按钮
         BrowserHeaders(self.top_layout, self.under_layout)  # 表头工具
-
+        MiTm(self.top_layout, self.under_layout)
         self.some_qss_set()
         self.show()  # show()方法在屏幕上显示出widget。一个widget对象在这里第一次被在内存中创建，并且之后在屏幕上显示。
 
