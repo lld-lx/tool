@@ -8,31 +8,24 @@ from mitmproxy.script import concurrent
 
 class HTTP(object):
     def __init__(self, page):
-        # ((url, 0), (requests_headers, 1), (...))
-        # 一个page对应一页,每页的全部参数传入HTTP封装成mitmproxy启动需要的addon类
         self.url, \
-            self.code,\
-            self.requests_headers,\
+            self.requests_headers, \
             self.requests_data, \
             self.response_headers, \
-            self.response_data \
+            self.response_data, \
+            self.code, \
             = (i for i in page)
-        # 为1则使用正则, 为0则使用完全匹配
-        self.url_flag = self.url[1]
-
-    @staticmethod
-    def re_compile(flow_parm, parm):
-        return compile(parm, flow_parm)
+        self.url_flag = self.url[2]
 
     # 请求时就设置,非2xx直接不发送请求,断开连接
-    @concurrent
     def http_connect(self, flow: mitmproxy.http.HTTPFlow):
-        if self.code:
+        print("http_connect")
+        if self.code != '':
             if self.url_flag:
-                if self.re_compile(flow.request.url, self.url[0]):
+                if self.re_compile(flow.request.url, self.url[1]):
                     flow.response = http.HTTPResponse.make(self.code)
             else:
-                if flow.request.url == self.url[0]:
+                if flow.request.url == self.url[1]:
                     flow.response = http.HTTPResponse.make(self.code)
                 else:
                     return
@@ -41,48 +34,61 @@ class HTTP(object):
 
     # 对表头进行替换  (need_match, replace_msg, 0)
     # 为0则使用字典, 为1则完全替换, 为2则使用正则, 为-1则不需要替换
-    @concurrent
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
-        for one_rule in self.requests_headers:
-            flow.request.headers = self.header_func(
-                flow.request.url,
-                flow.request.headers,
-                one_rule[0],
-                one_rule[1],
-                one_rule[2]
-            )
+        print("RequestHeaders")
+        if (self.requests_headers[0] == "") or (self.requests_headers[1] == ""):
+            return
+        else:
+            for split_value in self.requests_headers[0].split(";"):
+                flow.request.headers = self.header_func(
+                    flow.request.url,
+                    flow.request.headers,
+                    split_value,
+                    self.requests_headers[1],
+                    self.requests_headers[2]
+                    )
 
-    def requests(self, flow: mitmproxy.http.HTTPFlow):
-        for one_rule in self.requests_data:
-            flow.response.text = self.data_func(
-                flow.request.url,
-                flow.request.text,
-                one_rule[0],
-                one_rule[1],
-                one_rule[2]
-            )
+    def request(self, flow: mitmproxy.http.HTTPFlow):
+        print("Requests")
+        if (self.requests_data[0] == "") or (self.requests_data[1] == ""):
+            return
+        else:
+            for split_value in self.requests_data[0].split(";"):
+                flow.request.text = self.data_func(
+                    flow.request.url,
+                    flow.request.text,
+                    split_value,
+                    self.requests_data[1],
+                    self.requests_data[2],
+                )
 
-    @concurrent
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
-        for one_rule in self.response_headers:
-            flow.response.headers = self.header_func(
-                flow.request.url,
-                flow.response.headers,
-                one_rule[0],
-                one_rule[1],
-                one_rule[2]
-            )
+        print("responseheaders")
+        if (self.response_headers[0] == "") or (self.response_headers[1] == ""):
+            return
+        else:
+            for split_value in self.response_headers[0].split(";"):
+                flow.response.headers = self.header_func(
+                    flow.request.url,
+                    flow.request.text,
+                    split_value,
+                    self.response_headers[1],
+                    self.response_headers[2],
+                )
 
-    @concurrent
     def response(self, flow: mitmproxy.http.HTTPFlow):
-        for one_rule in self.response_data:
-            flow.response.text = self.data_func(
-                flow.request.url,
-                flow.request.text,
-                one_rule[0],
-                one_rule[1],
-                one_rule[2]
-            )
+        print("response")
+        if (self.response_data[0] == "") or (self.response_data[1] == ""):
+            return
+        else:
+            for split_value in self.response_data[0].split(";"):
+                flow.response.text = self.data_func(
+                    flow.request.url,
+                    flow.request.text,
+                    split_value,
+                    self.response_data[1],
+                    self.response_data[2],
+                )
 
     def http_connect_upstream(self, flow: mitmproxy.http.HTTPFlow):
         pass
@@ -104,7 +110,12 @@ class HTTP(object):
     def path_set(self, dictionary, path, set_item):
         path = path.split("/")
         key = path[-1]
-        dictionary = self.path_get(dictionary, "/".join(path[:-1]))
+        if "/".join(path[:-1]):
+            self.path_get(dictionary, "/".join(path[:-1]))
+        else:
+            dictionary[key] = set_item
+            return dictionary
+
         try:
             dictionary[key] = set_item
         except Exception:
@@ -125,34 +136,33 @@ class HTTP(object):
             return flow_header
         elif rule == 0:
             if self.url_flag:
-                if self.re_compile(flow_url, self.url[0]):
+                if self.re_compile(flow_url, self.url[1]):
                     flow_header = self.path_set(flow_header, compile_key, compile_value)
             else:
-                if flow_url == self.url[0]:
+                if flow_url == self.url[1]:
                     flow_header = self.path_set(flow_header, compile_key, compile_value)
             return flow_header
-
         elif rule == 1:
             if self.url_flag:
-                if self.re_compile(flow_url, self.url[0]):
+                if self.re_compile(flow_url, self.url[1]):
                     try:
-                        flow_header = dict(compile_value)
+                        flow_header = dumps(compile_value)
                     except Exception as e:
                         print("无法替换成功: %s" % e)
             else:
-                if flow_url == self.url[0]:
+                if flow_url == self.url[1]:
                     try:
-                        flow_header = dict(compile_value)
+                        flow_header = dumps(compile_value)
                     except Exception as e:
                         print("无法替换成功: %s" % e)
             return flow_header
 
         elif rule == 2:
             if self.url_flag:
-                if self.re_compile(flow_url, self.url[0]):
+                if self.re_compile(flow_url, self.url[1]):
                     flow_header = self.re_sub(compile_key, compile_value, flow_header)
             else:
-                if flow_url == self.url[0]:
+                if flow_url == self.url[1]:
                     flow_header = self.re_sub(compile_key, compile_value, flow_header)
             return flow_header
 
@@ -175,23 +185,23 @@ class HTTP(object):
 
         elif rule == 0:
             if self.url_flag:
-                if self.re_compile(flow_url, self.url[0]):
+                if self.re_compile(flow_url, self.url[1]):
                     flow_msg = func(flow_msg)
             else:
-                if flow_url == self.url[0]:
+                if flow_url == self.url[1]:
                     flow_msg = func(flow_msg)
             return flow_msg
 
         elif rule == 1:
             if self.url_flag:
-                if self.re_compile(flow_url, self.url[0]):
+                if self.re_compile(flow_url, self.url[1]):
                     try:
                         flow_msg = compile_value
                     except Exception as e:
                         print("无法替换成功: %s" % e)
 
             else:
-                if flow_url == self.url[0]:
+                if flow_url == self.url[1]:
                     try:
                         flow_msg = compile_value
                     except Exception as e:
@@ -200,9 +210,14 @@ class HTTP(object):
 
         elif rule == 2:
             if self.url_flag:
-                if self.re_compile(flow_url, self.url[0]):
+                if self.re_compile(flow_url, self.url[1]):
                     flow_msg = self.re_sub(compile_key, compile_value, flow_msg)
             else:
-                if flow_url == self.url[0]:
+                if flow_url == self.url[1]:
                     flow_msg = self.re_sub(compile_key, compile_value, flow_msg)
             return flow_msg
+
+    @staticmethod
+    def re_compile(flow_parm, parm):
+        return compile(parm, flow_parm)
+
