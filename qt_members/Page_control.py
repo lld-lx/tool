@@ -18,17 +18,16 @@ class PageController(QWidget):
         self.nextPage = QPushButton("下一页>")
 
         self.totalPage = QLabel("共 " + str(self.page + 1) + " 页")
-        control_layout.addStretch(1)
+        control_layout.addStretch(0)
         control_layout.addWidget(self.prePage)
         control_layout.addWidget(self.curPage)
         control_layout.addWidget(self.nextPage)
         control_layout.addWidget(self.totalPage)
-
-        control_layout.addStretch(1)
+        control_layout.addStretch(0)
         self.prePage.clicked.connect(lambda: self.button_clicked())
         self.nextPage.clicked.connect(lambda: self.button_clicked())
 
-        page_layout.addWidget(page_weight, 9, 3, 1, 5)
+        page_layout.addWidget(page_weight, 10, 24, 1, 6)
 
     def button_clicked(self):
         button_text = self.mother.sender().text()

@@ -7,6 +7,15 @@ from mitmproxy.script import concurrent
 
 
 class HTTP(object):
+    """
+    parm:self.url   必填，进行过滤匹配
+    parm:self.code  使用参数时,url需填写host，非2xx直接不发送请求
+    以下参数逻辑：为0则使用字典, 为1则完全替换, 为2则使用正则
+    parm:self.requests_headers
+    parm:self.requests_data
+    parm:self.response_headers
+    parm:self.response_data
+    """
     def __init__(self, page):
         self.url, \
             self.requests_headers, \
@@ -17,23 +26,22 @@ class HTTP(object):
             = (i for i in page)
         self.url_flag = self.url[2]
 
-    # 请求时就设置,非2xx直接不发送请求,断开连接
+    @concurrent
     def http_connect(self, flow: mitmproxy.http.HTTPFlow):
         print("http_connect")
         if self.code != '':
             if self.url_flag:
-                if self.re_compile(flow.request.url, self.url[1]):
-                    flow.response = http.HTTPResponse.make(self.code)
+                if self.re_compile(flow.request.host, self.url[1]):
+                    flow.response = http.HTTPResponse.make(int(self.code))
             else:
-                if flow.request.url == self.url[1]:
-                    flow.response = http.HTTPResponse.make(self.code)
+                if flow.request.host == self.url[1]:
+                    flow.response = http.HTTPResponse.make(int(self.code))
                 else:
                     return
         else:
             return
 
-    # 对表头进行替换  (need_match, replace_msg, 0)
-    # 为0则使用字典, 为1则完全替换, 为2则使用正则, 为-1则不需要替换
+    @concurrent
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
         print("RequestHeaders")
         if (self.requests_headers[0] == "") or (self.requests_headers[1] == ""):
@@ -48,6 +56,7 @@ class HTTP(object):
                     self.requests_headers[2]
                     )
 
+    @concurrent
     def request(self, flow: mitmproxy.http.HTTPFlow):
         print("Requests")
         if (self.requests_data[0] == "") or (self.requests_data[1] == ""):
@@ -62,6 +71,7 @@ class HTTP(object):
                     self.requests_data[2],
                 )
 
+    @concurrent
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
         print("responseheaders")
         if (self.response_headers[0] == "") or (self.response_headers[1] == ""):
@@ -76,6 +86,7 @@ class HTTP(object):
                     self.response_headers[2],
                 )
 
+    @concurrent
     def response(self, flow: mitmproxy.http.HTTPFlow):
         print("response")
         if (self.response_data[0] == "") or (self.response_data[1] == ""):
@@ -100,6 +111,7 @@ class HTTP(object):
     @staticmethod
     def path_get(dictionary, path):
         for item in path.split("/"):
+            # noinspection PyBroadException
             try:
                 dictionary = dictionary[item]
             except Exception:
@@ -115,7 +127,7 @@ class HTTP(object):
         else:
             dictionary[key] = set_item
             return dictionary
-
+        # noinspection PyBroadException
         try:
             dictionary[key] = set_item
         except Exception:
@@ -132,9 +144,7 @@ class HTTP(object):
             return None
 
     def header_func(self, flow_url, flow_header, compile_key, compile_value, rule):
-        if rule == -1:
-            return flow_header
-        elif rule == 0:
+        if rule == 0:
             if self.url_flag:
                 if self.re_compile(flow_url, self.url[1]):
                     flow_header = self.path_set(flow_header, compile_key, compile_value)
@@ -180,10 +190,7 @@ class HTTP(object):
                 print("无法替换成功: %s" % ex)
             return msg
 
-        if rule == -1:
-            return flow_msg
-
-        elif rule == 0:
+        if rule == 0:
             if self.url_flag:
                 if self.re_compile(flow_url, self.url[1]):
                     flow_msg = func(flow_msg)
@@ -220,4 +227,3 @@ class HTTP(object):
     @staticmethod
     def re_compile(flow_parm, parm):
         return compile(parm, flow_parm)
-

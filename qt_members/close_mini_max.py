@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QGraphicsOpacityEffect, QWidget
-from css.reader import CommonHelper
+from qss.reader import CommonHelper
 from win_fonts.hover_set import MyButton
 
 
@@ -37,7 +37,7 @@ class CMM(QWidget):
         qtn_full.setFixedSize(15, 15)
         qtn_mini.setFixedSize(15, 15)
         # 设置样式
-        qss = self.read('./css/top.qss')
+        qss = self.read('./qss/top.qss')
         qtn_exit.setStyleSheet(qss)
         qtn_mini.setStyleSheet(qss)
         qtn_full.setStyleSheet(qss)

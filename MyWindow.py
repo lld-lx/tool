@@ -5,7 +5,7 @@ from win_fonts.round_font import RoundShadow, FramelessWindow
 from win_fonts.move_font import MOVE
 from qt_members.close_mini_max import CMM
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QGridLayout, QHBoxLayout
-from css.reader import CommonHelper
+from qss.reader import CommonHelper
 from PyQt5.QtCore import Qt
 
 
@@ -13,19 +13,10 @@ class Tool(RoundShadow, MOVE, FramelessWindow):
     def __init__(self):
         super(Tool, self).__init__()
         self.read = CommonHelper().read_qss
-        self.main_widget, self.main_layout = None, None
-        self.top_widget, self.top_layout = None, None
-        self.under_widget, self.under_layout = None, None
-        self.top_left_widget, self.top_left_layout = None, None
-        self.top_right_widget, self.top_right_layout = None, None
-        self.close_widget, self.close_layout = None, None
-        self.mini_widget, self.mini_layout = None, None
-        self.headers_bar, self.headers_body = None, None
-
-        self.init_ui()  # 页面布局
+        self._main_ui()  # 页面布局
         self.window()   # 窗口元素
 
-    def init_ui(self):
+    def _main_ui(self):
         self.main_widget = QWidget()  # 创建窗口主部件
         self.main_layout = QVBoxLayout()  # 创建水平布局
         self.main_widget.setLayout(self.main_layout)  # 设置窗口主部件布局为水平
@@ -39,18 +30,18 @@ class Tool(RoundShadow, MOVE, FramelessWindow):
 
         self.top_left_widget = QWidget()
         self.top_left_widget.setObjectName('top_left_widget')
-        self.top_left_layout = QGridLayout()  # 创建上部分左侧的网格布局层
-        self.top_left_widget.setLayout(self.top_left_layout)  # 设置上部分左侧的布局
+        self.top_left_layout = QGridLayout()  # 创建上部份左侧的网格布局层
+        self.top_left_widget.setLayout(self.top_left_layout)  # 设置上部份左侧的布局
 
         self.top_right_widget = QWidget()
         self.top_right_widget.setObjectName('top_right_widget')
-        self.top_right_layout = QHBoxLayout()  # 垂直布局
-        self.top_right_widget.setLayout(self.top_right_layout)  # 设置上部分右侧的布局
+        self.top_right_layout = QHBoxLayout()  # 水平布局
+        self.top_right_widget.setLayout(self.top_right_layout)  # 设置上部份右侧的布局
 
-        self.under_widget = QWidget()  # 创建下半部分的部件
+        self.under_widget = QWidget()  # 创建下半部份的部件
         self.under_widget.setObjectName('under_widget')
-        self.under_layout = QVBoxLayout()
-        self.under_widget.setLayout(self.under_layout)  # 设置下半部分布局
+        self.under_layout = QVBoxLayout()  # 垂直布局
+        self.under_widget.setLayout(self.under_layout)  # 设置下半部份布局
         self.under_widget.setMouseTracking(True)
 
         self.main_layout.addWidget(self.top_widget, 1)  # 上侧部件占比1
@@ -72,7 +63,7 @@ class Tool(RoundShadow, MOVE, FramelessWindow):
         self.show()  # show()方法在屏幕上显示出widget。一个widget对象在这里第一次被在内存中创建，并且之后在屏幕上显示。
 
     def some_qss_set(self):
-        widget_qss = self.read("./css/top.qss")
+        widget_qss = self.read("./qss/top.qss")
         self.top_widget.setStyleSheet(widget_qss)
         self.under_widget.setStyleSheet(widget_qss)
         self.top_left_widget.setStyleSheet(widget_qss)
