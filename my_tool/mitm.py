@@ -192,8 +192,8 @@ class MiTm(ToolMember, PageController):
         addons = []
         for one_page in self.all_msg:
             addons.append(HTTP(one_page))
-        self.config = mitmproxy_config(ip, int(port), addons, self.num)
-        self.thread = next(mitmproxy_start(self.config, self.num))
+        self.config = mitmproxy_config(ip, int(port), addons)
+        self.thread = mitmproxy_start(self.config[0], self.config[1])
         self.num += 1
         self.start_button.setText("停止")
         self.start_button.setEnabled(True)
@@ -202,7 +202,7 @@ class MiTm(ToolMember, PageController):
 
     def end_mitmproxy(self):
         self.start_button.setEnabled(False)
-        mitmproxy_shutdown(self.config, self.thread)
+        mitmproxy_shutdown(self.config[0])
         proxy_shutdown()
         self.start_button.disconnect()
         self.start_button.clicked.connect(lambda: self.start_mitmproxy())

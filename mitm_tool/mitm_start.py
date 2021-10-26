@@ -5,6 +5,7 @@ from mitmproxy.proxy.server import ProxyServer
 from mitmproxy.tools.dump import DumpMaster
 import threading
 import asyncio
+num = 0
 
 
 # for example
@@ -25,35 +26,35 @@ def loop_in_thread(loop, m):
 
 
 # addon: list
-def mitmproxy_config(ip, port, addons, num):
-    options = Options(listen_host=ip, listen_port=port, http2=True, num=bool(num))
+def mitmproxy_config(ip, port, addons):
+    global num
+    if not num:
+        loop = asyncio.get_event_loop()
+        num += 1
+    else:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    options = Options(listen_host=ip, listen_port=port, http2=True)
     m = DumpMaster(options, with_termlog=False, with_dumper=False)
     config = ProxyConfig(options)
     m.server = ProxyServer(config)
     for addon in addons:
         m.addons.add(addon)
-    return m
+    return m, loop
 
 
-def mitmproxy_start(mt, num):
+def mitmproxy_start(mt, loop):
     # run mitmproxy in backgroud, especially integrated with other server
-    if not num:
-        loop = asyncio.get_event_loop()
-        t = threading.Thread(target=loop_in_thread, args=(loop, mt))
-        t.start()
-    else:
-        loop = asyncio.new_event_loop()
-        t = threading.Thread(target=loop_in_thread, args=(loop, mt))
-        t.start()
-    yield t, loop
+    t = threading.Thread(target=loop_in_thread, args=(loop, mt))
+    print("loop1: %s" % id(loop))
+    t.start()
     print("----------start------------")
     # Other servers might be started too.
     # print('going to shutdown mitmproxy')
 
 
-def mitmproxy_shutdown(mt, thread):
+def mitmproxy_shutdown(mt):
     mt.shutdown()
-
     print("----------end------------")
 
 
