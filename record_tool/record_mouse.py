@@ -26,10 +26,10 @@ def my_func(wParam, lParam):
 
 # 启动消息钩取，首先创造KeyLogger 类，然后installHookProc（）函数设置钩子，同时
 # 注册钩子过程回调函数。最后调用startKeyLog（）函数，将进入队列的消息传递给勾连
-keyLogger = Logger(WH_MOUSE_LL, my_func)
-address = keyLogger.get_fptr(keyLogger.hook_proc)
+logger = Logger(WH_MOUSE_LL, my_func)
+address = logger.get_fptr(logger.hook_proc)
 
-if keyLogger.install_hook_proc(address):
+if logger.install_hook_proc(address):
     print("installed keyLogger")
 
-keyLogger.start_key_log()
+logger.start_key_log()
