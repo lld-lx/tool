@@ -1,10 +1,10 @@
-from mitmproxy import http, ctx
+from mitmproxy import http
 from mitmproxy.options import Options
 from mitmproxy.proxy import ProxyConfig
 from mitmproxy.proxy.server import ProxyServer
 from mitmproxy.tools.dump import DumpMaster
-import threading
-import asyncio
+from threading import Thread
+from asyncio import get_event_loop, new_event_loop, set_event_loop
 num = 0
 
 
@@ -21,7 +21,6 @@ class Addon(object):
 
 # see source mitmproxy/master.py for details
 def loop_in_thread(loop, m):
-    asyncio.set_event_loop(loop)  # This is the key.
     m.run_loop(loop.run_forever)
 
 
@@ -29,11 +28,11 @@ def loop_in_thread(loop, m):
 def mitmproxy_config(ip, port, addons):
     global num
     if not num:
-        loop = asyncio.get_event_loop()
+        loop = get_event_loop()
         num += 1
     else:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        loop = new_event_loop()
+    set_event_loop(loop)
     options = Options(listen_host=ip, listen_port=port, http2=True)
     m = DumpMaster(options, with_termlog=False, with_dumper=False)
     config = ProxyConfig(options)
@@ -45,8 +44,7 @@ def mitmproxy_config(ip, port, addons):
 
 def mitmproxy_start(mt, loop):
     # run mitmproxy in backgroud, especially integrated with other server
-    t = threading.Thread(target=loop_in_thread, args=(loop, mt))
-    print("loop1: %s" % id(loop))
+    t = Thread(target=loop_in_thread, args=(loop, mt))
     t.start()
     print("----------start------------")
     # Other servers might be started too.
@@ -59,5 +57,5 @@ def mitmproxy_shutdown(mt):
 
 
 if __name__ == "__main__":
-    mitmproxy_s = mitmproxy_config('127.0.0.1', 8088, [Addon()], 0)
+    mitmproxy_s = mitmproxy_config('127.0.0.1', 8088, [Addon()])
     mitmproxy_start(mitmproxy_s, 1)

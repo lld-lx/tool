@@ -1,12 +1,12 @@
 from sys import argv, exit
-from my_tool.browser_headers_change_to_dict import BrowserHeaders
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QGridLayout, QHBoxLayout
 from my_tool.mitm import MiTm
-from win_fonts.round_font import RoundShadow, FramelessWindow
+from qss.reader import CommonHelper
 from win_fonts.move_font import MOVE
 from qt_members.close_mini_max import CMM
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QGridLayout, QHBoxLayout
-from qss.reader import CommonHelper
-from PyQt5.QtCore import Qt
+from my_tool.browser_headers_change_to_dict import BrowserHeaders
+from win_fonts.round_font import RoundShadow, FramelessWindow
 
 
 class Tool(RoundShadow, MOVE, FramelessWindow):
