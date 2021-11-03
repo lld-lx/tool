@@ -1,5 +1,6 @@
-from ctypes import windll, CFUNCTYPE, c_int, POINTER, c_void_p, byref
 from ctypes.wintypes import MSG
+from record_tool.message import GetMsStruct, GetKbStruct
+from ctypes import windll, CFUNCTYPE, c_int, POINTER, byref
 
 dwThreadId = 0
 
@@ -36,8 +37,13 @@ class Logger:
     # 获取函数指针：若想注册钩子过程(回调函数)，必须传入函数指针。ctypes为此提供了专门的方法。
     # 通过CFUNCTYPE()创建并返回使用标准C调用约定的函数, 参数参考CFUNCTYPE自带说明
     @staticmethod
-    def get_fptr(fn):
-        creat_func = CFUNCTYPE(c_int, c_int, c_int, POINTER(c_void_p))
+    def get_mouse_fptr(fn):
+        creat_func = CFUNCTYPE(c_int, c_int, c_int, POINTER(GetMsStruct))
+        return creat_func(fn)
+
+    @staticmethod
+    def get_board_fptr(fn):
+        creat_func = CFUNCTYPE(c_int, c_int, c_int, POINTER(GetKbStruct))
         return creat_func(fn)
 
     # 传递消息：GetMessageA()函数函数监视队列，消息进入队列后取出消息，并传递给勾连中的第一个钩子
