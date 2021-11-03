@@ -1,5 +1,10 @@
-"""记录鼠标事件、位置将记录托管到后台，可以选择时间段来回放操作"""
-from ctypes import windll, cast, POINTER, c_ulong
+"""记录鼠标事件、位置,存入队列后,由中心将数据存入数据库中
+这里将数据转了一次后再丢给c去写入数据库，理论上直接存也行
+究竟是c去写快还是py直接写快，我觉得优化后应该是c，但是py
+中使用异步的手段很方便所以也行正常还是py直接写进数据库快"""
+from ctypes import windll, pointer
+from record_tool.message import INPUT, SetMsStruct
+from record_tool.record_main import Que
 from record_tool.logger import Logger
 
 
@@ -17,14 +22,12 @@ def my_func(wParam, lParam):
         WM_LBUTTONDOWN、WM_LBUTTONUP、WM_MOUSEMOVE、WM_MOUSEWHEEL、
         WM_MOUSEHWHEEL、WM_RBUTTONDOWN or WM_RBUTTONUP.
     """
-    print(wParam)
-    print("x=%s" % lParam.contents.pt.x)
-    print("y=%s" % lParam.contents.pt.y)
-    print("mouseData=%s" % lParam.contents.mouseData)
-    print("dwFlags=%s" % lParam.contents.dwFlags)
-    print("time=%s" % lParam.contents.time)
-    print("dwExtraInfo=%s" % lParam.contents.dwExtraInfo)
-    print()
+    lp = lParam.contents
+    ms = SetMsStruct(dx=lp.pt.x, dy=lp.pt.y, mouseData=lp.mouseData,
+                     dwFlags=lp.dwFlags, time=lp.time, dwExtraInfo=lp.dwExtraInfo)
+
+    st = INPUT(wParam=wParam, m=pointer(ms))
+    Que.put(st)
 
 
 def start_mouse_listen():
@@ -34,7 +37,7 @@ def start_mouse_listen():
     address = logger.get_mouse_fptr(logger.hook_proc)
 
     if logger.install_hook_proc(address):
-        print("installed keyLogger")
+        print("installed mouseLogger")
 
     logger.start_key_log()
 

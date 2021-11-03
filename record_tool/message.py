@@ -1,5 +1,5 @@
 """create some structure for python"""
-from ctypes import Structure, c_long, c_ulong, c_int
+from ctypes import Structure, c_long, c_ulong, c_int, POINTER
 
 
 class SetMsStruct(Structure):
@@ -12,6 +12,20 @@ class SetMsStruct(Structure):
         ("dy", c_long),
         ("mouseData", c_ulong),
         ("dwFlags", c_ulong),
+        ("time", c_ulong),
+        ("dwExtraInfo", c_long)
+    ]
+
+
+class SetKbStruct(Structure):
+    """
+    Contains information about
+        a simulated mouse event
+    """
+    _fields_ = [
+        ("vkCode", c_long),
+        ("scanCode", c_long),
+        ("flags", c_ulong),
         ("time", c_ulong),
         ("dwExtraInfo", c_long)
     ]
@@ -52,4 +66,12 @@ class GetKbStruct(Structure):
         ("flags", c_ulong),
         ("time", c_ulong),
         ("dwExtraInfo", c_long)
+    ]
+
+
+class INPUT(Structure):
+    _fields_ = [
+        ("wParam", c_int),
+        ("m", POINTER(SetMsStruct)),
+        ("k", POINTER(SetKbStruct))
     ]
