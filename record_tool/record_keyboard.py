@@ -1,21 +1,20 @@
 """记录键盘事件,托管到后台，可以选择时间段来回放操作"""
-from ctypes import windll
+from ctypes import pointer, POINTER
 from record_tool.logger import Logger
-
-
-# 使用windll声明user32类型的变量,底下有相关的函数
-user32 = windll.user32
+from record_tool.record_main import Que
+from record_tool.message import SetKbStruct, INPUT
 
 #  low-level keyboard input events
 WH_KEYBOARD_LL = 13
 
 
 def my_func(wParam, lParam):
-    print(lParam.contents.vkCode)
-    print(lParam.contents.scanCode)
-    print(lParam.contents.flags)
-    print(lParam.contents.time)
-    print(lParam.contents.dwExtraInfo)
+    lp = lParam.contents
+    kb = SetKbStruct(vkCode=lp.vkCode, scanCode=lp.scanCode,
+                     flags=lp.flags, time=lp.time, dwExtraInfo=lp.dwExtraInfo)
+
+    st = pointer(INPUT(wParam=wParam, k=pointer(kb)))
+    Que.put(st)
 
 
 def start_keyboard_listen():

@@ -3,13 +3,13 @@ from record_tool.message import GetMsStruct, GetKbStruct
 from ctypes import windll, CFUNCTYPE, c_int, POINTER, byref
 
 dwThreadId = 0
+user32 = windll.user32
+kernel32 = windll.kernel32
 
 
 # 定义类：定义拥有挂钩与拆钩功能的类
 class Logger:
     def __init__(self, id_type, my_func):
-        self.mod = windll.kernel32.GetModuleHandleW
-        self.close = windll.user32.UnhookWindowsHookEx
         self.hooked = None
         self.my_func = my_func
         self.id_type = id_type
@@ -17,10 +17,10 @@ class Logger:
     # 定义挂钩函数：使用user32DLL的SetWindowsHookExA函数设置钩子。
     # 构造结构可参考微软公开的dll文档
     def install_hook_proc(self, lpfn):
-        self.hooked = windll.user32.SetWindowsHookExA(
+        self.hooked = user32.SetWindowsHookExA(
             self.id_type,
             lpfn,
-            self.mod(None),
+            kernel32.GetModuleHandleW(None),
             dwThreadId
         )
         if not self.hooked:
@@ -31,7 +31,7 @@ class Logger:
     def uninstall_hook_proc(self):
         if self.hooked is None:
             return
-        self.close(self.hooked)
+        user32.UnhookWindowsHookEx(self.hooked)
         self.hooked = None
 
     # 获取函数指针：若想注册钩子过程(回调函数)，必须传入函数指针。ctypes为此提供了专门的方法。
@@ -50,7 +50,7 @@ class Logger:
     @staticmethod
     def start_key_log():
         msg = MSG()
-        windll.user32.GetMessageA(byref(msg), 0, 0, 0)
+        user32.GetMessageA(byref(msg), 0, 0, 0)
 
     def hook_proc(self, nCode, wParam, lParam):
         """
@@ -59,4 +59,4 @@ class Logger:
         """
         if nCode >= 0:
             self.my_func(wParam, lParam)
-        return windll.user32.CallNextHookEx(self.hooked, nCode, wParam, lParam)
+        return user32.CallNextHookEx(self.hooked, nCode, wParam, lParam)

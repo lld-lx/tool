@@ -2,14 +2,11 @@
 这里将数据转了一次后再丢给c去写入数据库，理论上直接存也行
 究竟是c去写快还是py直接写快，我觉得优化后应该是c，但是py
 中使用异步的手段很方便所以也行正常还是py直接写进数据库快"""
-from ctypes import windll, pointer
+from ctypes import pointer
 from record_tool.message import INPUT, SetMsStruct
 from record_tool.record_main import Que
 from record_tool.logger import Logger
 
-
-# 使用windll声明user32类型的变量,底下有相关的函数
-user32 = windll.user32
 
 # low-level mouse input events
 WH_MOUSE_LL = 14
@@ -26,7 +23,7 @@ def my_func(wParam, lParam):
     ms = SetMsStruct(dx=lp.pt.x, dy=lp.pt.y, mouseData=lp.mouseData,
                      dwFlags=lp.dwFlags, time=lp.time, dwExtraInfo=lp.dwExtraInfo)
 
-    st = INPUT(wParam=wParam, m=pointer(ms))
+    st = pointer(INPUT(wParam=wParam, m=pointer(ms)))
     Que.put(st)
 
 
