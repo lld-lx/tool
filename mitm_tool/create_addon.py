@@ -42,7 +42,9 @@ class HTTP(object):
 
     @concurrent
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
-        if (self.requests_headers[0] == "") or (self.requests_headers[1] == ""):
+        if self.requests_headers[1] == "":
+            return
+        elif self.requests_headers[0] == "" and self.requests_headers[2] != 1:
             return
         else:
             for split_value in self.requests_headers[0].split(";"):
@@ -56,7 +58,9 @@ class HTTP(object):
 
     @concurrent
     def request(self, flow: mitmproxy.http.HTTPFlow):
-        if (self.requests_data[0] == "") or (self.requests_data[1] == ""):
+        if self.requests_data[1] == "":
+            return
+        elif self.requests_data[0] == "" and self.requests_data[2] != 1:
             return
         else:
             for split_value in self.requests_data[0].split(";"):
@@ -70,7 +74,9 @@ class HTTP(object):
 
     @concurrent
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
-        if (self.response_headers[0] == "") or (self.response_headers[1] == ""):
+        if self.response_headers[1] == "":
+            return
+        elif self.response_headers[0] == "" and self.response_headers[2] != 1:
             return
         else:
             for split_value in self.response_headers[0].split(";"):
