@@ -21,6 +21,7 @@ class Addon(object):
 
 # see source mitmproxy/master.py for details
 def loop_in_thread(loop, m):
+    set_event_loop(loop)
     m.run_loop(loop.run_forever)
 
 
@@ -32,7 +33,7 @@ def mitmproxy_config(ip, port, addons):
         num += 1
     else:
         loop = new_event_loop()
-    set_event_loop(loop)
+        set_event_loop(loop)
     options = Options(listen_host=ip, listen_port=port, http2=True)
     m = DumpMaster(options, with_termlog=False, with_dumper=False)
     config = ProxyConfig(options)

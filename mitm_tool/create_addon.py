@@ -8,13 +8,13 @@ from mitmproxy.script import concurrent
 
 class HTTP(object):
     """
-    parm:self.url   必填，进行过滤匹配
-    parm:self.code  使用参数时,url需填写host，非2xx直接不发送请求
+    @parm:self.url   必填，进行过滤匹配
+    @parm:self.code  使用参数时,url需填写host，非2xx直接不发送请求
     以下参数逻辑：为0则使用字典, 为1则完全替换, 为2则使用正则
-    parm:self.requests_headers
-    parm:self.requests_data
-    parm:self.response_headers
-    parm:self.response_data
+    @parm:self.requests_headers
+    @parm:self.requests_data
+    @parm:self.response_headers
+    @parm:self.response_data
     """
     def __init__(self, page):
         self.url, \
@@ -28,7 +28,6 @@ class HTTP(object):
 
     @concurrent
     def http_connect(self, flow: mitmproxy.http.HTTPFlow):
-        print("http_connect")
         if self.code != '':
             if self.url_flag:
                 if self.re_compile(flow.request.host, self.url[1]):
@@ -43,7 +42,6 @@ class HTTP(object):
 
     @concurrent
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
-        print("RequestHeaders")
         if (self.requests_headers[0] == "") or (self.requests_headers[1] == ""):
             return
         else:
@@ -58,7 +56,6 @@ class HTTP(object):
 
     @concurrent
     def request(self, flow: mitmproxy.http.HTTPFlow):
-        print("Requests")
         if (self.requests_data[0] == "") or (self.requests_data[1] == ""):
             return
         else:
@@ -73,14 +70,13 @@ class HTTP(object):
 
     @concurrent
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
-        print("responseheaders")
         if (self.response_headers[0] == "") or (self.response_headers[1] == ""):
             return
         else:
             for split_value in self.response_headers[0].split(";"):
                 flow.response.headers = self.header_func(
                     flow.request.url,
-                    flow.request.text,
+                    flow.response.headers,
                     split_value,
                     self.response_headers[1],
                     self.response_headers[2],
@@ -88,14 +84,15 @@ class HTTP(object):
 
     @concurrent
     def response(self, flow: mitmproxy.http.HTTPFlow):
-        print("response")
-        if (self.response_data[0] == "") or (self.response_data[1] == ""):
+        if self.response_data[1] == "":
+            return
+        elif self.response_data[0] == "" and self.response_data[2] != 1:
             return
         else:
             for split_value in self.response_data[0].split(";"):
                 flow.response.text = self.data_func(
                     flow.request.url,
-                    flow.request.text,
+                    flow.response.text,
                     split_value,
                     self.response_data[1],
                     self.response_data[2],
