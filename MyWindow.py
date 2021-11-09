@@ -2,6 +2,7 @@ from sys import argv, exit
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QGridLayout, QHBoxLayout
 from my_tool.mitm import MiTm
+from my_tool.mouse_keyboard import Record
 from qss.reader import CommonHelper
 from win_fonts.move_font import MOVE
 from qt_members.close_mini_max import CMM
@@ -59,6 +60,7 @@ class Tool(RoundShadow, MOVE, FramelessWindow):
             self.top_right_layout.addWidget(j, 1, Qt.AlignTop)  # 关闭放大三个按钮
         BrowserHeaders(self.top_layout, self.under_layout)  # 表头工具
         MiTm(self.top_layout, self.under_layout)
+        Record(self.top_layout, self.under_layout)
         self.some_qss_set()
         self.show()  # show()方法在屏幕上显示出widget。一个widget对象在这里第一次被在内存中创建，并且之后在屏幕上显示。
 

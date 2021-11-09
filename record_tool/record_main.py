@@ -9,13 +9,15 @@ Que = Queue()
 
 def listen_center():
     num = 0
-    insert = CDLL("../dlls/set_sqlite.dll", winmode=0)
+    insert = CDLL("./dlls/set_sqlite.dll", winmode=0)
     struct = (POINTER(INPUT) * 10)()
-    insert.create_database(bytes("../sqlite/MKEvent.db", encoding='utf-8'))  # 创建连接，db获取句柄
+    insert.create_database(bytes("./sqlite/MKEvent.db", encoding='utf-8'))  # 创建连接，db获取句柄
+    from my_tool.mouse_keyboard import show_que
     while True:
         st = Que.get()
         if st:
             struct[num] = st
+            show_que.put(st)
             num += 1
             if num == 10:
                 insert.insert_database(struct)
