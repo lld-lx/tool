@@ -114,29 +114,17 @@ class HTTP(object):
     @staticmethod
     def path_get(dictionary, path):
         for item in path.split("/"):
-            # noinspection PyBroadException
-            try:
-                dictionary = dictionary[item]
-            except Exception:
-                dictionary = dictionary[int(item)]
+            if "[" in item:  # 兼容路径字符串里面  /log/[2]/disk中 [2]取列表
+                item = eval(item)[0]
+            dictionary = dictionary[item]
         return dictionary
 
     # 修改字典输入路径的值
     def path_set(self, dictionary, path, set_item):
         path = path.split("/")
         key = path[-1]
-        if "/".join(path[:-1]):
-            self.path_get(dictionary, "/".join(path[:-1]))
-        else:
-            dictionary[key] = set_item
-            return dictionary
-        # noinspection PyBroadException
-        try:
-            dictionary[key] = set_item
-        except Exception:
-            dictionary[int(key)] = set_item
-
-        return dictionary
+        dictionary = self.path_get(dictionary, "/".join(path[:-1]))
+        dictionary[key] = set_item
 
     @staticmethod
     def re_sub(rule, repl, string):
@@ -150,10 +138,10 @@ class HTTP(object):
         if rule == 0:
             if self.url_flag:
                 if self.re_compile(flow_url, self.url[1]):
-                    flow_header = self.path_set(flow_header, compile_key, compile_value)
+                    self.path_set(flow_header, compile_key, compile_value)
             else:
                 if flow_url == self.url[1]:
-                    flow_header = self.path_set(flow_header, compile_key, compile_value)
+                    self.path_set(flow_header, compile_key, compile_value)
             return flow_header
         elif rule == 1:
             if self.url_flag:
@@ -186,21 +174,24 @@ class HTTP(object):
             try:
                 read_dict = loads(msg)
                 if type(read_dict) == dict:
-                    result = self.path_set(read_dict, compile_key, compile_value)
-                    msg = dumps(result)
+                    self.path_set(read_dict, compile_key, compile_value)
+                    return dumps(read_dict)
             # 处理失败则直接返回None
             except Exception as ex:
                 print("无法替换成功: %s" % ex)
-            return msg
 
         if rule == 0:
             if self.url_flag:
                 if self.re_compile(flow_url, self.url[1]):
-                    flow_msg = func(flow_msg)
+                    change = func(flow_msg)
+                else:
+                    change = flow_msg
             else:
                 if flow_url == self.url[1]:
-                    flow_msg = func(flow_msg)
-            return flow_msg
+                    change = func(flow_msg)
+                else:
+                    change = flow_msg
+            return change
 
         elif rule == 1:
             if self.url_flag:

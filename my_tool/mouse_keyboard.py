@@ -53,7 +53,6 @@ class Record(ToolMember):
         self.send = MyTypeSignal()  # 创建信号
         self.slot = MySlot()    # 创建槽位
         self.slot.set_object(self.qt)
-        self.qt.setReadOnly(True)  # 设置只读
 
     def _qt_button(self):
         self.bu = QPushButton()
@@ -73,12 +72,6 @@ class Record(ToolMember):
         self.num += 1
         self.qt.moveCursor(QTextCursor.Start)
         self.qt.insertPlainText(self.html(event, event_msg, time))
-        self.qt.insertPlainText(self.html(event, event_msg, time))
-
-        self.cur.movePosition(QTextCursor.End, QTextCursor.MoveAnchor, 0)
-        # self.cur.setPosition(0, QTextCursor.KeepAnchor)
-        # self.cur.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor, 0)
-        # self.cur.removeSelectedText()
 
     @staticmethod
     def html(event, event_msg, time):
