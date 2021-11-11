@@ -79,6 +79,3 @@ class FramelessWindow(QWidget):
             self.start.setEndValue(0.95)
             self.start.start()
             self.start.finished.connect(self.show)
-
-
-

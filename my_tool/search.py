@@ -1,20 +1,21 @@
 """全局"""
-
-from PyQt5.QtWidgets import QDialog, qApp, QAction
+from PyQt5.QtWidgets import QDialog, qApp, QAction, QWidget, QVBoxLayout, QLabel
 from win32clipboard import OpenClipboard, GetClipboardData, CloseClipboard
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPropertyAnimation
 from win32con import CF_UNICODETEXT
 from async_http.http import post
 from asyncio import ensure_future, set_event_loop, new_event_loop
-from threading import Thread
+from threading import Thread, Event
 from record_tool.get_mouse_position import get_position
 from record_tool.record_keyboard import start_keyboard_listen, Que
+from queue import Queue
 from pykeyboard import PyKeyboard
 from js2py import EvalJs
 from time import sleep
 from aiofiles import open as opens
 
 context = EvalJs()
+content_que = Queue()
 
 
 class DiyWindow(QDialog):
@@ -52,14 +53,15 @@ class DiyWindow(QDialog):
                 x, y = get_position()
                 Thread(target=self.creat_tip, args=(x, y)).start()
                 sleep(0.1)  # 不等待会立即拷贝,可以考虑系统剪切板
-                self.show_content()
+                Thread(target=self._show_content).start()
             else:
                 continue
 
-    def show_content(self):
+    @staticmethod
+    def _show_content():
         content = get_text()
         translate = BaiDuTranslate(content)
-        translate.run()
+        content_que.put(translate.run())
 
     def creat_tip(self, x, y):
         self.send.run(x, y)
@@ -144,7 +146,7 @@ class BaiDuTranslate(object):
         task = ensure_future(self.get_content())
         loop.run_until_complete(task)
         content = task.result()
-        print(content["trans_result"]["data"][0]["dst"])
+        return content["trans_result"]["data"][0]["dst"]
 
 
 class TipWindow(QDialog):
@@ -154,6 +156,65 @@ class TipWindow(QDialog):
         self.resize(70, 25)
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowOpacity(0.8)
+        self.setMouseTracking(True)
+        self._ui()
+        self._label()
+
+    def _ui(self):
+        self.main_widget = QWidget()
+        self.main_layout = QVBoxLayout()
+        self.main_widget.setLayout(self.main_layout)
+        self.setLayout(self.main_layout)
+
+    def _label(self):
+        self.la = QLabel()
+        Thread(target=self.set_text).start()
+        Thread(target=self.mouse_event).start()     # 启动一个线程监听鼠标位置
+        self.main_layout.addWidget(self.la)
+
+    def set_text(self):
+        while True:
+            content = content_que.get()
+            if content:
+                self.la.setText(content)
+                break
+
+    def mouse_event(self):
+        while True:
+            x, y = get_position()
+            pos_x, pos_y = self.x(), self.y()
+            width, height = self.width(), self.height()
+            if (pos_x <= x <= pos_x + width) and (pos_y <= y <= pos_y + height):
+                sleep(0.1)
+            else:
+                if self.close():
+                    break
+                else:
+                    continue
+
+    def closeEvent(self, event):
+        ev = Event()
+        cv = Event()
+        Thread(target=self.set_time, args=(ev, cv)).start()
+        while True:
+            x, y = get_position()
+            pos_x, pos_y = self.x(), self.y()
+            width, height = self.width(), self.height()
+            if ev.isSet():
+                break
+            else:
+                if (pos_x <= x <= pos_x + width) and (pos_y <= y <= pos_y + height):
+                    cv.set()
+                    return 0
+        self.close()
+        return 1
+
+    def set_time(self, ev, cv):
+        sleep(2)
+        if cv.isSet():
+            pass
+        else:
+            ev.set()
 
 
 def get_text():
