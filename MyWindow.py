@@ -3,11 +3,13 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QGridLayout, QHBoxLayout
 from my_tool.mitm import MiTm
 from my_tool.mouse_keyboard import Record
+from my_tool.search import DiyWindow, TipWindow
 from qss.reader import CommonHelper
 from win_fonts.move_font import MOVE
 from qt_members.close_mini_max import CMM
 from my_tool.browser_headers_change_to_dict import BrowserHeaders
 from win_fonts.round_font import RoundShadow, FramelessWindow
+from signals.create_signal import WinPos, WinCreate
 
 
 class Tool(RoundShadow, MOVE, FramelessWindow):
@@ -59,10 +61,18 @@ class Tool(RoundShadow, MOVE, FramelessWindow):
         for i, j in enumerate(CMM(self).circle_button()):
             self.top_right_layout.addWidget(j, 1, Qt.AlignTop)  # 关闭放大三个按钮
         BrowserHeaders(self.top_layout, self.under_layout)  # 表头工具
+        self._slot()  # 创建信号槽
+        DiyWindow(self, self.send)
         MiTm(self.top_layout, self.under_layout)
         Record(self.top_layout, self.under_layout)
         self.some_qss_set()
-        self.show()  # show()方法在屏幕上显示出widget。一个widget对象在这里第一次被在内存中创建，并且之后在屏幕上显示。
+        self.show()
+
+    def _slot(self):
+        self.send = WinPos()  # 创建信号
+        self.slot = WinCreate()  # 创建槽位
+        self.send.send_msg.connect(self.slot.get)
+        self.slot.set_object(TipWindow)
 
     def some_qss_set(self):
         widget_qss = self.read("./qss/top.qss")
@@ -75,6 +85,4 @@ class Tool(RoundShadow, MOVE, FramelessWindow):
 if __name__ == '__main__':
     app = QApplication(argv)
     ex = Tool()
-    exit(app.exec_())   # 应用进入主循环。在这个地方，事件处理开始执行。主循环用于接收来自窗口触发的事件，
-    # 并且转发他们到widget应用上处理。如果我们调用exit()方法或主widget组件被销毁，主循环将退出。
-    # sys.exit()方法确保一个不留垃圾的退出。系统环境将会被通知应用是怎样被结束的。
+    exit(app.exec_())

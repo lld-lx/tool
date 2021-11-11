@@ -1,35 +1,16 @@
 from threading import Thread
 from queue import Queue
 
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtGui import QTextCursor
-
+from qt_members.tool_bar import ToolMember
+from signals.create_signal import MyTypeSignal, MySlot
 from record_tool.record_main import listen_center
 from record_tool.record_mouse import start_mouse_listen
 from record_tool.record_keyboard import start_keyboard_listen
 
+from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QPushButton, QTextEdit
-from qt_members.tool_bar import ToolMember
 
 show_que = Queue()
-
-
-class MyTypeSignal(QObject):
-    # 定义一个信号
-    send_msg = pyqtSignal()
-
-    def run(self):
-        self.send_msg.emit()
-
-
-class MySlot(QObject):
-    text = None
-
-    def set_object(self, text):
-        self.text = text
-
-    def get(self):
-        self.text.clear()
 
 
 class Record(ToolMember):

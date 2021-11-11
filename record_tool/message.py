@@ -75,3 +75,10 @@ class INPUT(Structure):
         ("m", POINTER(SetMsStruct)),
         ("k", POINTER(SetKbStruct))
     ]
+
+
+class Position(Structure):
+    _fields_ = [
+        ("dx", c_long),
+        ("dy", c_long)
+    ]
