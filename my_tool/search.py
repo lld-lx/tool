@@ -1,7 +1,7 @@
 """全局"""
 from PyQt5.QtWidgets import QDialog, qApp, QAction, QWidget, QVBoxLayout, QLabel
 from win32clipboard import OpenClipboard, GetClipboardData, CloseClipboard
-from PyQt5.QtCore import Qt, QPropertyAnimation
+from PyQt5.QtCore import Qt
 from win32con import CF_UNICODETEXT
 from async_http.http import post
 from asyncio import ensure_future, set_event_loop, new_event_loop
@@ -40,10 +40,8 @@ class DiyWindow(QDialog):
     def listen_click_translate(self):
         while True:
             msg = Que.get()
-            if msg.contents.k.contents.vkCode == 162 and msg.contents.k.contents.flags == 0:
+            if msg.contents.k.contents.vkCode == 162 and msg.contents.k.contents.flags == 128:
                 self.clicked += 1
-            elif msg.contents.k.contents.vkCode != 162:
-                self.clicked = 0
             if self.clicked == 2:
                 self.clicked = 0
                 self.key.press_key(self.key.control_key)
@@ -51,7 +49,7 @@ class DiyWindow(QDialog):
                 self.key.release_key(self.key.control_key)
                 self.key.release_key("c")
                 x, y = get_position()
-                Thread(target=self.creat_tip, args=(x, y)).start()
+                self.creat_tip(x, y)
                 sleep(0.1)  # 不等待会立即拷贝,可以考虑系统剪切板
                 Thread(target=self._show_content).start()
             else:
@@ -156,7 +154,6 @@ class TipWindow(QDialog):
         self.resize(70, 25)
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowOpacity(0.8)
-        self.setMouseTracking(True)
         self._ui()
         self._label()
 
@@ -187,34 +184,28 @@ class TipWindow(QDialog):
             if (pos_x <= x <= pos_x + width) and (pos_y <= y <= pos_y + height):
                 sleep(0.1)
             else:
-                if self.close():
-                    break
-                else:
-                    continue
+                self.check_close()
 
-    def closeEvent(self, event):
+    def check_close(self):
         ev = Event()
-        cv = Event()
-        Thread(target=self.set_time, args=(ev, cv)).start()
+        Thread(target=self.set_time, args=(ev, )).start()
         while True:
             x, y = get_position()
             pos_x, pos_y = self.x(), self.y()
             width, height = self.width(), self.height()
             if ev.isSet():
-                break
+                self.close()
             else:
                 if (pos_x <= x <= pos_x + width) and (pos_y <= y <= pos_y + height):
-                    cv.set()
-                    return 0
-        self.close()
-        return 1
+                    break
 
-    def set_time(self, ev, cv):
+    @staticmethod
+    def set_time(ev):
         sleep(2)
-        if cv.isSet():
-            pass
-        else:
-            ev.set()
+        ev.set()
+
+    def click_mouse(self):
+        pass
 
 
 def get_text():
